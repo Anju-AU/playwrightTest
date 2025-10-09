@@ -1,0 +1,22 @@
+{
+  "name": "playwrighttest",
+  "version": "1.0.0",
+  "main": "index.js",
+  "scripts": {},
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/Anju-AU/playwrightTest.git"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/Anju-AU/playwrightTest/issues"
+  },
+  "homepage": "https://github.com/Anju-AU/playwrightTest#readme",
+  "description": "",
+  "devDependencies": {
+    "@playwright/test": "^1.56.0",
+    "@types/node": "^24.7.0"
+  }
+}
