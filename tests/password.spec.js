@@ -44,7 +44,7 @@ test('Attempt to submit the form with an empty password field and verify that an
     // Add assertion for the error message
 });
 
-test('Enter a password that does not meet the security requirements and check for validation errors', async ({ page }) => {
+test('Enter a password that does not meet the security requirements and check for validation error', async ({ page }) => {
     const passwordPage = new PasswordPage(page);
     const invalidPassword = 'Short1!';
     await passwordPage.enterPassword(invalidPassword);

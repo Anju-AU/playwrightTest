@@ -17,11 +17,33 @@ jobs:
       run: npm ci
     - name: Install Playwright Browsers
       run: npx playwright install --with-deps
-    - name: Run Playwright tests
-      run: npx playwright test
-    - uses: actions/upload-artifact@v4
-      if: ${{ !cancelled() }}
+    - name: Run Playwright tests with reporter blob
+      id: Run_tests
+      run: |
+        npx playwright test --report=blob
+        echo "blob_report_dir=playwright_report" >> $GITHUB_OUTPUT
+    - name: Generate HTML Report from BLOB report
+      id: get_html_report
+      run: |
+        npx playwright show-report --report-dir ${{steps.Run_tests.outputs.blob_report_dir}}
+        echo "html_report_dir=${{steps.Run_tests.outputs.blob_report_dir}}" >>$GITHUB_OUTPUT
+    - name: Upload PLaywright report
+      if: always()
+      uses: actions/upload-artifact@v4
       with:
-        name: playwright-report
-        path: playwright-report/
-        retention-days: 30
+        name: playwright-html-report
+        path: ${{steps.Run_tests.outputs.blob_report_dir}}
+    - name: Print report path
+      run: echo "Report is located at ${{steps.Run_tests.outputs.blob_report_dir}}"
+  report:
+    needs: test
+    runs-on: ubuntu-latest
+    steps:
+    - name: download artifact
+      uses: actions/download-artifact@v4
+      with:
+        name: my_test-artifact
+        path: test-directory
+    - name: lis the conent
+      run: ls -R test-directory
+
