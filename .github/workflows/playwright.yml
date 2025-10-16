@@ -21,11 +21,11 @@ jobs:
       id: Run_tests
       run: |
         npx playwright test --reporter=blob
-        echo "blob_report_dir=playwright_report" >> $GITHUB_OUTPUT
+        echo "blob_report_dir=playwright-report" >> $GITHUB_OUTPUT
     - name: Generate HTML Report from BLOB report
       id: get_html_report
       run: |
-        npx playwright show-report  ${{steps.Run_tests.outputs.blob_report_dir}}
+        npx playwright show-report ${{steps.Run_tests.outputs.blob_report_dir}}
         echo "html_report_dir=${{steps.Run_tests.outputs.blob_report_dir}}" >>$GITHUB_OUTPUT
     - name: Upload PLaywright report
       if: always()
