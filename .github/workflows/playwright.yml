@@ -20,7 +20,7 @@ jobs:
     - name: Run Playwright tests with reporter blob
       id: Run_tests
       run: |
-        npx playwright test --report=blob
+        npx playwright test --reporter=blob
         echo "blob_report_dir=playwright_report" >> $GITHUB_OUTPUT
     - name: Generate HTML Report from BLOB report
       id: get_html_report
