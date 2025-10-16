@@ -1,141 +1,49 @@
-name: Playwright Blob -> HTML Report
-
+name: Playwright Tests
 on:
-  workflow_dispatch:
   push:
-    branches: [ main ]
-
+    branches: [ main, master ]
+  pull_request:
+    branches: [ main, master ]
 jobs:
-  test-and-upload-blob:
+  test:
+    timeout-minutes: 60
     runs-on: ubuntu-latest
     steps:
-      - name: Checkout
-        uses: actions/checkout@v4
-
-      - name: Use Node.js
-        uses: actions/setup-node@v4
-        with:
-          node-version: 22
-
-      - name: Install
-        run: npm ci
-      - name: Install Playwright Browsers
-        run: npx playwright install --with-deps
-
-      - name: Run Playwright tests (generate blob report)
-        # run playwright with the blob reporter. Adjust workers as needed.
-        run: |
-          # Run tests with blob reporter
-          npx playwright test --reporter=blob
-
-          # If Playwright produced a report.zip inside blob-report, unzip it for easier merging later.
-          if [ -f "blob-report/report.zip" ]; then
-            mkdir -p blob-report-unzipped
-            unzip -q blob-report/report.zip -d blob-report-unzipped
-          else
-            # If Playwright already wrote JSON/JSONL files into blob-report, copy them to the "unzip" folder
-            if [ -d "blob-report" ]; then
-              mkdir -p blob-report-unzipped
-              cp -r blob-report/* blob-report-unzipped/ || true
-            fi
-          fi
-
-          # List what we will upload (helps debug)
-          echo "==== blob-report-unzipped contents ===="
-          ls -laR blob-report-unzipped || true
-
-      - name: Upload blob report artifact
-        uses: actions/upload-artifact@v4
-        with:
-          name: blob-report
-          path: blob-report-unzipped
-
-  download-and-generate-html:
-    runs-on: ubuntu-latest
-    needs: test-and-upload-blob
-    steps:
-      - name: Checkout (needed to run Playwright locally)
-        uses: actions/checkout@v4
-
-      - name: Use Node.js
-        uses: actions/setup-node@v4
-        with:
-          node-version: 22
-
-      - name: Install
-        run: npm ci
-
-      - name: Download blob report artifact
-        uses: actions/download-artifact@v4
-        with:
-          name: blob-report
-          path: downloaded-blob
-
-      - name: Inspect downloaded blob (debug)
-        run: |
-          echo "==== downloaded tree ===="
-          ls -laR downloaded-blob || true
-          echo "==== head of any jsonl file ===="
-          # print first few bytes of any jsonl to see format
-          for f in $(find downloaded-blob -type f -name '*.jsonl' -o -name '*.json' -o -name '*.json*' | head -n 5); do
-            echo "---- $f ----"
-            head -n 5 "$f" || true
-          done || true
-
-      - name: Generate HTML report from blob
-        run: |
-          # Try to merge a folder of blob files into an HTML report
-          # Prefer pointing merge-reports at a folder that directly contains JSON/JSONL files.
-          MERGE_FOLDER="downloaded-blob"
-          # If there is a nested folder (e.g., extracted/unpacked), try to find it:
-          # (choose the directory that contains JSON/JSONL or metadata.json files)
-          FOUND_DIR=$(find "$MERGE_FOLDER" -maxdepth 2 -type f \( -name '*.jsonl' -o -name '*.json' -o -name 'metadata.json' \) -printf '%h\n' | sort -u | head -n 1 || true)
-          if [ -n "$FOUND_DIR" ]; then
-            echo "Found candidate blob files in: $FOUND_DIR"
-            MERGE_FOLDER="$FOUND_DIR"
-          else
-            echo "No blob files found under $MERGE_FOLDER; attempting to use $MERGE_FOLDER directly"
-          fi
-
-          # Attempt merge -> html
-          echo "Running: npx playwright merge-reports \"$MERGE_FOLDER\" --reporter html"
-          set -o pipefail
-          if npx playwright merge-reports "$MERGE_FOLDER" --reporter html; then
-            echo "merge-reports succeeded"
-          else
-            echo "merge-reports failed. Checking for report.jsonl and trying show-report fallback..."
-            # If merge failed, try show-report directly against a report.jsonl file (sometimes works)
-            JSONL_FILE=$(find "$MERGE_FOLDER" -type f -name 'report.jsonl' | head -n 1 || true)
-            if [ -n "$JSONL_FILE" ]; then
-              echo "Found report.jsonl at: $JSONL_FILE"
-              # Create a persistent HTML folder
-              npx playwright show-report "$JSONL_FILE" --output playwright-report || true
-            else
-              echo "No report.jsonl found. Cannot create HTML from this blob artifact."
-              # fail pipeline so we know to inspect outputs
-              exit 1
-            fi
-          fi
-
-          echo "==== playwright-report contents ===="
-          ls -laR playwright-report || true
-
-      - name: Upload HTML report artifact
-        if: always()
-        uses: actions/upload-artifact@v4
-        with:
-          name: playwright-report
-          path: playwright-report
-
+    - uses: actions/checkout@v4
+    - uses: actions/setup-node@v4
+      with:
+        node-version: lts/*
+    - name: Install dependencies
+      run: npm ci
+    - name: Install Playwright Browsers
+      run: npx playwright install --with-deps
+    - name: Run Playwright tests with reporter blob
+      id: Run_tests
+      run: |
+        npx playwright test --reporter=blob
+        echo "blob_report_dir=blob-report" >> $GITHUB_OUTPUT
+    - name: Generate HTML Report from BLOB report
+      id: get_html_report
+      run: |
+        npx playwright show-report ${{steps.Run_tests.outputs.blob_report_dir}}
+        echo "html_report_dir=${{steps.Run_tests.outputs.blob_report_dir}}" >>$GITHUB_OUTPUT
+    - name: Upload PLaywright report
+      if: always()
+      uses: actions/upload-artifact@v4
+      with:
+        name: playwright-html-report
+        path: ${{steps.Run_tests.outputs.blob_report_dir}}
+    - name: Print report path
+      run: echo "Report is located at ${{steps.Run_tests.outputs.blob_report_dir}}"
   report:
-    needs: download-and-generate-html
+    needs: test
     runs-on: ubuntu-latest
     steps:
     - name: download artifact
       uses: actions/download-artifact@v4
       with:
         name: my_test-artifact
-        path: downloaded-blob
+        path: test-directory
     - name: lis the conent
-      run: ls -R downloaded-blob
+      run: ls -R test-directory
 
