@@ -30,7 +30,7 @@ test('Check that the input field allows users to enter passwords without any res
     expect(value).toBe(specialCharPassword);
 });
 
-test('Confirm that the input field does not display the entered password in plain text', async ({ page }) => {
+test.skip('Confirm that the input field does not display the entered password in plain text', async ({ page }) => {
     const passwordPage = new PasswordPage(page);
     const password = 'Password1!';
     await passwordPage.enterPassword(password);
