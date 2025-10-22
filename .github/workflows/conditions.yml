@@ -21,4 +21,4 @@ jobs:
       - name: Run condition script
         id: set_env
         run: |
-          bash scripts/conditions.sh "${{ inputs.environment }}"
+          bash ./scripts/conditions.sh "${{ inputs.environment }}"
