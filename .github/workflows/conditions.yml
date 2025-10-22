@@ -1,0 +1,24 @@
+name: Condition Workflow
+
+on:
+  workflow_call:
+    inputs:
+      environment:
+        required: true
+        type: string
+    outputs:
+      env_result:
+        description: "Output environment"
+        value: ${{ jobs.condition_job.outputs.env_result }}
+
+jobs:
+  condition_job:
+    runs-on: ubuntu-latest
+    outputs:
+      env_result: ${{ steps.set_env.outputs.env_output }}
+    steps:
+      - uses: actions/checkout@v4
+      - name: Run condition script
+        id: set_env
+        run: |
+          bash scripts/condition.sh "${{ inputs.environment }}"

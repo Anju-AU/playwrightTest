@@ -1,0 +1,24 @@
+name: Loop Workflow
+
+on:
+  workflow_call:
+    inputs:
+      env_from_condition:
+        required: true
+        type: string
+    outputs:
+      loop_result:
+        description: "Processed loop result"
+        value: ${{ jobs.loop_job.outputs.loop_result }}
+
+jobs:
+  loop_job:
+    runs-on: ubuntu-latest
+    outputs:
+      loop_result: ${{ steps.run_loop.outputs.loop_output }}
+    steps:
+      - uses: actions/checkout@v4
+      - name: Run loop script
+        id: run_loop
+        run: |
+          bash scripts/loop.sh "${{ inputs.env_from_condition }}"

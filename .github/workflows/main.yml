@@ -1,0 +1,49 @@
+name: Main Workflow
+
+on:
+  push:
+    branches:
+      - main
+      - dev
+      - feature/*
+
+jobs:
+  determine_env:
+    runs-on: ubuntu-latest
+    outputs:
+      ENVIRONMENT: ${{ steps.set_env.outputs.ENVIRONMENT }}
+    steps:
+      - name: Set environment based on branch
+        id: set_env
+        run: |
+          echo "Git ref: $GITHUB_REF"
+
+          if [[ "${GITHUB_REF}" == "refs/heads/main" ]]; then
+            echo "ENVIRONMENT=production" >> $GITHUB_ENV
+            echo "ENVIRONMENT=production" >> $GITHUB_OUTPUT
+          else
+            echo "ENVIRONMENT=staging" >> $GITHUB_ENV
+            echo "ENVIRONMENT=staging" >> $GITHUB_OUTPUT
+          fi
+
+  call_condition:
+    needs: determine_env
+    uses: ./.github/workflows/conditions.yml
+    with:
+      environment: ${{ needs.determine_env.outputs.ENVIRONMENT }}
+
+  call_loop:
+    needs: [determine_env, call_condition]
+    uses: ./.github/workflows/loop.yml
+    with:
+      env_from_condition: ${{ needs.call_condition.outputs.env_result }}
+
+  show_results:
+    runs-on: ubuntu-latest
+    needs: [determine_env, call_condition, call_loop]
+    steps:
+      - name: Print outputs
+        run: |
+          echo "Detected Env: ${{ needs.determine_env.outputs.ENVIRONMENT }}"
+          echo "Condition Output: ${{ needs.call_condition.outputs.env_result }}"
+          echo "Loop Output: ${{ needs.call_loop.outputs.loop_result }}"
