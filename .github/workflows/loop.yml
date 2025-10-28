@@ -21,4 +21,4 @@ jobs:
       - name: Run loop script
         id: run_loop
         run: |
-          bash ./scripts/loop.sh "${{ inputs.env_from_condition }}"
+          bash scripts/loop.sh "${{ inputs.env_from_condition }}"
