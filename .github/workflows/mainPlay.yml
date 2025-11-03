@@ -27,9 +27,6 @@ jobs:
       - name: Run Playwright tests
         run: npx playwright test 
         continue-on-error: true
-
-      - name: Zip report
-        run: zip -r report.zip playwright-report
       - name: Debug email secrets
         run: |
           echo "Mail Host: ${{ secrets.MAIL_HOST }}"
@@ -44,9 +41,9 @@ jobs:
           server_port: ${{ secrets.MAIL_PORT }}
           username: ${{ secrets.MAIL_USERNAME }}
           password: ${{ secrets.MAIL_PASSWORD }}
-          subject: "Playwright Test Report - ${{ github.run_number }}"
+          subject: "Playwright Test Report 
           to: ${{ secrets.MAIL_TO }}
           from: ${{ secrets.MAIL_USERNAME }}
           secure: true
           body: "Hi Team,<br><br>Attached is the playwright test report for the latest run.<br><br>Regards,<br>GitHub Actions"
-          attachments: report.zip
+          
