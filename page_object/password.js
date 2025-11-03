@@ -4,7 +4,7 @@
     }
 
     get passwordInput() {
-        return this.page.locator('input[data-test=password]');
+        return this.page.locator('input#password');
     }
 
     get placeholderText() {
@@ -12,12 +12,13 @@
     }
 
     async enterPassword(password) {
+        await this.page.locator("#username").fill("student"); // Assuming username is required
         await this.passwordInput.fill(password);
     }
 
     async submitForm() {
         
-        await this.page.click('#login-button'); // Assuming there's a submit button
+        await this.page.click('#submit'); // Assuming there's a submit button
     }
 
     async getPasswordValue() {
