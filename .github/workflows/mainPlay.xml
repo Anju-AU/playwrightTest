@@ -1,0 +1,52 @@
+name: Playwright Tests and Mail Report
+
+on:
+  push:
+    branches: [ staging ]
+  workflow_dispatch:
+
+jobs:
+  test:
+    timeout-minutes: 60
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repo
+        uses: actions/checkout@v3
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: lts/*
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Install Playwright Browsers
+        run: npx playwright install --with-deps
+
+      - name: Run Playwright tests
+        run: npx playwright test 
+        continue-on-error: true
+
+      - name: Zip report
+        run: zip -r report.zip playwright-report
+      - name: Debug email secrets
+        run: |
+          echo "Mail Host: ${{ secrets.MAIL_HOST }}"
+          echo "Mail Port: ${{ secrets.MAIL_PORT }}"
+          echo "Mail Username: ${{ secrets.MAIL_USERNAME }}"
+          echo "Mail To: ${{ secrets.MAIL_TO }}"
+          echo "Secure flag: true"
+      - name: Send Email with Report
+        uses: dawidd6/action-send-mail@v3
+        with:
+          server_address: ${{ secrets.MAIL_HOST }}
+          server_port: ${{ secrets.MAIL_PORT }}
+          username: ${{ secrets.MAIL_USERNAME }}
+          password: ${{ secrets.MAIL_PASSWORD }}
+          subject: "Playwright Test Report - ${{ github.run_number }}"
+          to: ${{ secrets.MAIL_TO }}
+          from: ${{ secrets.MAIL_USERNAME }}
+          secure: true
+          body: "Hi Team,<br><br>Attached is the Playwright test report for the latest run.<br><br>Regards,<br>GitHub Actions"
+          attachments: report.zip

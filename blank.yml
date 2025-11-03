@@ -1,49 +1,49 @@
-# name: Playwright Tests
-# on:
-#   push:
-#     branches: [ main, master ]
-#   pull_request:
-#     branches: [ main, master ]
-# jobs:
-#   test:
-#     timeout-minutes: 60
-#     runs-on: ubuntu-latest
-#     steps:
-#     - uses: actions/checkout@v4
-#     - uses: actions/setup-node@v4
-#       with:
-#         node-version: lts/*
-#     - name: Install dependencies
-#       run: npm ci
-#     - name: Install Playwright Browsers
-#       run: npx playwright install --with-deps
-#     - name: Run Playwright tests with reporter blob
-#       id: Run_tests
-#       run: |
-#         npx playwright test --reporter=blob
-#         echo "blob_report_dir=blob-report" >> $GITHUB_OUTPUT
-#     - name: Generate HTML Report from BLOB report
-#       id: get_html_report
-#       run: |
-#         npx playwright show-report ${{steps.Run_tests.outputs.blob_report_dir}}
-#         echo "html_report_dir=${{steps.Run_tests.outputs.blob_report_dir}}" >>$GITHUB_OUTPUT
-#     - name: Upload PLaywright report
-#       if: always()
-#       uses: actions/upload-artifact@v4
-#       with:
-#         name: playwright-html-report
-#         path: ${{steps.Run_tests.outputs.blob_report_dir}}
-#     - name: Print report path
-#       run: echo "Report is located at ${{steps.Run_tests.outputs.blob_report_dir}}"
-#   report:
-#     needs: test
-#     runs-on: ubuntu-latest
-#     steps:
-#     - name: download artifact
-#       uses: actions/download-artifact@v4
-#       with:
-#         name: my_test-artifact
-#         path: test-directory
-#     - name: lis the conent
-#       run: ls -R test-directory
+name: Playwright Tests
+on:
+  push:
+    branches: [ main, master ]
+  pull_request:
+    branches: [ main, master ]
+jobs:
+  test:
+    timeout-minutes: 60
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v4
+    - uses: actions/setup-node@v4
+      with:
+        node-version: lts/*
+    - name: Install dependencies
+      run: npm ci
+    - name: Install Playwright Browsers
+      run: npx playwright install --with-deps
+    - name: Run Playwright tests with reporter blob
+      id: Run_tests
+      run: |
+        npx playwright test --reporter=blob
+        echo "blob_report_dir=blob-report" >> $GITHUB_OUTPUT
+    - name: Generate HTML Report from BLOB report
+      id: get_html_report
+      run: |
+        npx playwright show-report ${{steps.Run_tests.outputs.blob_report_dir}}
+        echo "html_report_dir=${{steps.Run_tests.outputs.blob_report_dir}}" >>$GITHUB_OUTPUT
+    - name: Upload PLaywright report
+      if: always()
+      uses: actions/upload-artifact@v4
+      with:
+        name: playwright-html-report
+        path: ${{steps.Run_tests.outputs.blob_report_dir}}
+    - name: Print report path
+      run: echo "Report is located at ${{steps.Run_tests.outputs.blob_report_dir}}"
+  report:
+    needs: test
+    runs-on: ubuntu-latest
+    steps:
+    - name: download artifact
+      uses: actions/download-artifact@v4
+      with:
+        name: my_test-artifact
+        path: test-directory
+    - name: lis the conent
+      run: ls -R test-directory
 
