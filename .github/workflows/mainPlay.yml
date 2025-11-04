@@ -29,7 +29,7 @@ jobs:
         continue-on-error: true
       - name: Debug email secrets
         run: |
-          echo "Mail Host: ${{ secrets.MAIL_HOST }}"
+          echo "Mail Host: smtp.zoho.in"
           echo "Mail Port: ${{ secrets.MAIL_PORT }}"
           echo "Mail Username: ${{ secrets.MAIL_USERNAME }}"
           echo "Mail To: ${{ secrets.MAIL_TO }}"
@@ -37,7 +37,7 @@ jobs:
       - name: Send Email with Report
         uses: dawidd6/action-send-mail@v3
         with:
-          server_address: ${{ secrets.MAIL_HOST }}
+          server_address: "smtp.zoho.in"
           server_port: ${{ secrets.MAIL_PORT }}
           username: ${{ secrets.MAIL_USERNAME }}
           password: ${{ secrets.MAIL_PASSWORD }}
