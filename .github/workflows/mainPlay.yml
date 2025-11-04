@@ -45,5 +45,10 @@ jobs:
           to: ${{ secrets.MAIL_TO }}
           from: ${{ secrets.MAIL_USERNAME }}
           secure: true
-          body: "Hi Team,<br><br>Attached is the playwright test report for the latest run.<br><br>Regards,<br>GitHub Actions"
+          content_type: text/html
+          body: |
+            Hi Team,<br><br>
+            Attached is the Playwright test report for the latest run.<br><br>
+            Regards,<br>
+            GitHub Actions
           
